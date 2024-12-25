@@ -26,6 +26,19 @@ const parseGraphFile = (content) => {
   return adjMatrix;
 };
 
+const generateRandomGraph = (nVertices) => {
+  const adjMatrix = Array(nVertices).fill().map(() => Array(nVertices).fill(0));
+  for (let i = 0; i < nVertices; i++) {
+    for (let j = i + 1; j < nVertices; j++) {
+      if (Math.random() > 0.5) {
+        adjMatrix[i][j] = 1;
+        adjMatrix[j][i] = 1;
+      }
+    }
+  }
+  return adjMatrix;
+};
+
 const checkIsomorphismLPP = async (graph1, graph2) => {
   if (!graph1 || !graph2 || graph1.length !== graph2.length) {
     return { isIsomorphic: false, mapping: {} };
@@ -143,6 +156,13 @@ function App() {
     }
   };
 
+  const generateGraph = (setGraph) => {
+    const nVertices = parseInt(prompt("Enter the number of vertices: "), 10);
+    if (nVertices > 0) {
+      setGraph(generateRandomGraph(nVertices));
+    }
+  };
+
   return (
     <div className="app-container">
       <h1>Graph Isomorphism Checker</h1>
@@ -153,10 +173,12 @@ function App() {
         <div className="graph-section">
           <h2>Graph 1</h2>
           <input type="file" accept=".graph" onChange={(e) => handleFileUpload(e, setGraph1)} />
+          <button onClick={() => generateGraph(setGraph1)}>Generate Random Graph</button>
         </div>
         <div className="graph-section">
           <h2>Graph 2</h2>
           <input type="file" accept=".graph" onChange={(e) => handleFileUpload(e, setGraph2)} />
+          <button onClick={() => generateGraph(setGraph2)}>Generate Random Graph</button>
         </div>
       </div>
 
