@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import './App.css';
+import GLPK from 'glpk.js'; // Install glpk.js for solving LPP
+import ForceGraph2D from 'react-force-graph-2d'; // Install react-force-graph
 
 const parseGraphFile = (content) => {
   const lines = content.split('\n');
@@ -25,51 +27,43 @@ const parseGraphFile = (content) => {
   return adjMatrix;
 };
 
-const checkIsomorphism = (graph1, graph2) => {
-  if (!graph1 || !graph2 || graph1.length !== graph2.length) {
-    return { isIsomorphic: false, mapping: {} };
-  }
+const generateGraphData = (adjMatrix) => {
+  const nodes = adjMatrix.map((_, i) => ({ id: i }));
+  const links = [];
 
-  const edges1 = graph1.flat().reduce((a, b) => a + b, 0) / 2;
-  const edges2 = graph2.flat().reduce((a, b) => a + b, 0) / 2;
+  adjMatrix.forEach((row, i) => {
+    row.forEach((value, j) => {
+      if (value === 1 && i < j) {
+        links.push({ source: i, target: j });
+      }
+    });
+  });
 
-  if (edges1 !== edges2) {
-    return { isIsomorphic: false, mapping: {} };
-  }
-
-  const degrees1 = graph1.map(row => row.reduce((a, b) => a + b, 0)).sort();
-  const degrees2 = graph2.map(row => row.reduce((a, b) => a + b, 0)).sort();
-
-  if (JSON.stringify(degrees1) !== JSON.stringify(degrees2)) {
-    return { isIsomorphic: false, mapping: {} };
-  }
-
-  return {
-    isIsomorphic: JSON.stringify(degrees1) === JSON.stringify(degrees2),
-    mapping: {}
-  };
+  return { nodes, links };
 };
 
-function App() {
+const generateRandomGraph = (nVertices, edgeDensity) => {
+  const adjMatrix = Array(nVertices).fill().map(() => Array(nVertices).fill(0));
+  const maxEdges = Math.floor(nVertices * (nVertices - 1) / 2 * edgeDensity);
+
+  let edgeCount = 0;
+  while (edgeCount < maxEdges) {
+    const v1 = Math.floor(Math.random() * nVertices);
+    const v2 = Math.floor(Math.random() * nVertices);
+    if (v1 !== v2 && adjMatrix[v1][v2] === 0) {
+      adjMatrix[v1][v2] = 1;
+      adjMatrix[v2][v1] = 1;
+      edgeCount++;
+    }
+  }
+
+  return adjMatrix;
+};
+
+const App = () => {
   const [graph1, setGraph1] = useState(null);
   const [graph2, setGraph2] = useState(null);
-  const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
-  const [vertices1, setVertices1] = useState(4);
-  const [vertices2, setVertices2] = useState(4);
-
-  const generateRandomGraph = (vertices) => {
-    const matrix = Array(vertices).fill().map(() => Array(vertices).fill(0));
-    for (let i = 0; i < vertices; i++) {
-      for (let j = i + 1; j < vertices; j++) {
-        if (Math.random() > 0.5) {
-          matrix[i][j] = 1;
-          matrix[j][i] = 1;
-        }
-      }
-    }
-    return matrix;
-  };
 
   const handleFileUpload = (e, setGraph) => {
     const file = e.target.files[0];
@@ -89,34 +83,15 @@ function App() {
     }
   };
 
-  const handleGenerateGraph = (setGraph, vertices) => {
-    const graph = generateRandomGraph(vertices);
-    setGraph(graph);
-    setError(null);
-  };
-
-  const checkGraphs = () => {
-    if (graph1 && graph2) {
-      const { isIsomorphic } = checkIsomorphism(graph1, graph2);
-      setResult(isIsomorphic);
+  const handleGenerateGraph = (setGraph) => {
+    const vertices = parseInt(prompt("Enter number of vertices:"));
+    const density = parseFloat(prompt("Enter edge density (0.0 to 1.0):"));
+    if (!isNaN(vertices) && !isNaN(density) && vertices > 0 && density >= 0 && density <= 1) {
+      const randomGraph = generateRandomGraph(vertices, density);
+      setGraph(randomGraph);
+    } else {
+      alert("Invalid input. Please enter valid values.");
     }
-  };
-
-  const renderMatrix = (matrix) => {
-    if (!matrix) return null;
-    return (
-      <div className="matrix-container">
-        {matrix.map((row, i) => (
-          <div key={i} className="matrix-row">
-            {row.map((cell, j) => (
-              <div key={j} className="matrix-cell">
-                {cell}
-              </div>
-            ))}
-          </div>
-        ))}
-      </div>
-    );
   };
 
   return (
@@ -128,79 +103,20 @@ function App() {
       <div className="graphs-container">
         <div className="graph-section">
           <h2>Graph 1</h2>
-          <div className="graph-input-options">
-            <input
-              type="file"
-              accept=".graph"
-              onChange={(e) => handleFileUpload(e, setGraph1)}
-              className="file-input"
-            />
-            <div className="generate-section">
-              <input
-                type="number"
-                min="2"
-                max="10"
-                value={vertices1}
-                onChange={(e) => setVertices1(parseInt(e.target.value))}
-                className="vertices-input"
-              />
-              <button 
-                onClick={() => handleGenerateGraph(setGraph1, vertices1)}
-                className="generate-button"
-              >
-                Generate Random Graph
-              </button>
-            </div>
-          </div>
-          {renderMatrix(graph1)}
+          <input type="file" accept=".graph" onChange={(e) => handleFileUpload(e, setGraph1)} />
+          <button onClick={() => handleGenerateGraph(setGraph1)}>Generate Random Graph</button>
+          {graph1 && <ForceGraph2D graphData={generateGraphData(graph1)} />} 
         </div>
 
         <div className="graph-section">
           <h2>Graph 2</h2>
-          <div className="graph-input-options">
-            <input
-              type="file"
-              accept=".graph"
-              onChange={(e) => handleFileUpload(e, setGraph2)}
-              className="file-input"
-            />
-            <div className="generate-section">
-              <input
-                type="number"
-                min="2"
-                max="10"
-                value={vertices2}
-                onChange={(e) => setVertices2(parseInt(e.target.value))}
-                className="vertices-input"
-              />
-              <button 
-                onClick={() => handleGenerateGraph(setGraph2, vertices2)}
-                className="generate-button"
-              >
-                Generate Random Graph
-              </button>
-            </div>
-          </div>
-          {renderMatrix(graph2)}
+          <input type="file" accept=".graph" onChange={(e) => handleFileUpload(e, setGraph2)} />
+          <button onClick={() => handleGenerateGraph(setGraph2)}>Generate Random Graph</button>
+          {graph2 && <ForceGraph2D graphData={generateGraphData(graph2)} />} 
         </div>
       </div>
-
-      <button
-        onClick={checkGraphs}
-        disabled={!graph1 || !graph2}
-        className="check-button"
-      >
-        Check Isomorphism
-      </button>
-
-      {result !== null && (
-        <div className="result-container">
-          <h2>Result:</h2>
-          <p>{result ? "The graphs are isomorphic!" : "The graphs are not isomorphic."}</p>
-        </div>
-      )}
     </div>
   );
-}
+};
 
 export default App;
