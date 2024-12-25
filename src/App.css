@@ -1,0 +1,181 @@
+:root {
+  --primary: #4a90e2;
+  --success: #2ecc71;
+  --error: #e74c3c;
+  --dark: #2c3e50;
+  --light: #ecf0f1;
+}
+
+body {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 100vh;
+  margin: 0;
+}
+
+.app-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  text-align: center;
+  color: var(--dark);
+  font-size: 2.5rem;
+  margin-bottom: 3rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.error-message {
+  background-color: rgba(231, 76, 60, 0.1);
+  color: var(--error);
+  padding: 1rem;
+  margin-bottom: 2rem;
+  border-radius: 10px;
+  text-align: center;
+  border-left: 4px solid var(--error);
+}
+
+.graphs-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  margin-bottom: 3rem;
+}
+
+.graph-section {
+  padding: 2rem;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease;
+}
+
+.graph-section:hover {
+  transform: translateY(-5px);
+}
+
+.graph-section h2 {
+  margin-bottom: 1.5rem;
+  color: var(--dark);
+  font-size: 1.8rem;
+  border-bottom: 2px solid var(--light);
+  padding-bottom: 0.5rem;
+}
+
+.file-input {
+  width: 100%;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border: 2px dashed var(--primary);
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.file-input:hover {
+  border-color: var(--success);
+  background: rgba(46, 204, 113, 0.05);
+}
+
+.matrix-container {
+  background: var(--light);
+  padding: 1.5rem;
+  border-radius: 10px;
+  overflow-x: auto;
+}
+
+.matrix-row {
+  display: flex;
+  justify-content: center;
+}
+
+.matrix-cell {
+  width: 45px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ddd;
+  background: white;
+  margin: 2px;
+  border-radius: 5px;
+  font-weight: bold;
+  color: var(--dark);
+  transition: all 0.2s ease;
+}
+
+.matrix-cell:hover {
+  background: var(--primary);
+  color: white;
+  transform: scale(1.1);
+}
+
+.check-button {
+  display: block;
+  margin: 3rem auto;
+  padding: 1rem 3rem;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(74, 144, 226, 0.3);
+}
+
+.check-button:disabled {
+  background: #bdc3c7;
+  box-shadow: none;
+}
+
+.check-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 20px rgba(74, 144, 226, 0.4);
+}
+
+.result-container {
+  text-align: center;
+  padding: 2rem;
+  background: white;
+  border-radius: 15px;
+  margin-top: 3rem;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  animation: fadeIn 0.5s ease;
+}
+
+.result-container h2 {
+  color: var(--dark);
+  margin-bottom: 1rem;
+  font-size: 1.8rem;
+}
+
+.result-container p {
+  font-size: 1.2rem;
+  color: var(--success);
+  font-weight: bold;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+  .graphs-container {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  
+  .app-container {
+    margin: 1rem;
+    padding: 1rem;
+  }
+}
