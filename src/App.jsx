@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import './App.css';
 import GLPK from 'glpk.js'; // Install glpk.js for solving LPP
-import ForceGraph2D from 'react-force-graph-2d';
 
 const parseGraphFile = (content) => {
   const lines = content.split('\n');
@@ -23,37 +22,6 @@ const parseGraphFile = (content) => {
     adjMatrix[v1][v2] = 1;
     adjMatrix[v2][v1] = 1;
   });
-
-  return adjMatrix;
-};
-
-const adjMatrixToGraph = (adjMatrix) => {
-  const nodes = adjMatrix.map((_, i) => ({ id: i }));
-  const links = [];
-  adjMatrix.forEach((row, i) => {
-    row.forEach((val, j) => {
-      if (val === 1 && i < j) {
-        links.push({ source: i, target: j });
-      }
-    });
-  });
-  return { nodes, links };
-};
-
-// Random graph generator
-const generateRandomGraph = (nVertices, nEdges) => {
-  const adjMatrix = Array(nVertices).fill().map(() => Array(nVertices).fill(0));
-
-  let edgeCount = 0;
-  while (edgeCount < nEdges) {
-    const v1 = Math.floor(Math.random() * nVertices);
-    const v2 = Math.floor(Math.random() * nVertices);
-    if (v1 !== v2 && adjMatrix[v1][v2] === 0) {
-      adjMatrix[v1][v2] = 1;
-      adjMatrix[v2][v1] = 1;
-      edgeCount++;
-    }
-  }
 
   return adjMatrix;
 };
@@ -149,30 +117,20 @@ function App() {
   const [graph2, setGraph2] = useState(null);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
-  const [graphData1, setGraphData1] = useState(null);
-  const [graphData2, setGraphData2] = useState(null);
 
-  const handleGenerateGraph = (setGraph, setGraphData) => {
-    const vertices = parseInt(prompt("Enter number of vertices:"));
-    const edges = parseInt(prompt("Enter number of edges:"));
-    if (!isNaN(vertices) && !isNaN(edges) && vertices > 0 && edges >= 0) {
-      const randomGraph = generateRandomGraph(vertices, edges);
-      setGraph(randomGraph);
-      setGraphData(adjMatrixToGraph(randomGraph));
-    } else {
-      alert("Invalid input. Please enter valid values.");
-    }
-  };
-
-  const handleFileUpload = (event, setGraph, setGraphData) => {
-    const file = event.target.files[0];
+  const handleFileUpload = (e, setGraph) => {
+    const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = (e) => {
-        const content = e.target.result;
-        const graph = parseGraphFile(content);
-        setGraph(graph);
-        setGraphData(adjMatrixToGraph(graph));
+        try {
+          const content = e.target.result;
+          const matrix = parseGraphFile(content);
+          setGraph(matrix);
+          setError(null);
+        } catch (err) {
+          setError("Error parsing graph file. Please check the format.");
+        }
       };
       reader.readAsText(file);
     }
@@ -194,24 +152,11 @@ function App() {
       <div className="graphs-container">
         <div className="graph-section">
           <h2>Graph 1</h2>
-          <button onClick={() => handleGenerateGraph(setGraph1, setGraphData1)}>Generate Random Graph</button>
-          <input type="file" accept=".txt" onChange={(e) => handleFileUpload(e, setGraph1, setGraphData1)} />
-          {graphData1 && (
-            <div className="graph-container">
-              <ForceGraph2D graphData={graphData1} />
-            </div>
-          )}
+          <input type="file" accept=".graph" onChange={(e) => handleFileUpload(e, setGraph1)} />
         </div>
-
         <div className="graph-section">
           <h2>Graph 2</h2>
-          <button onClick={() => handleGenerateGraph(setGraph2, setGraphData2)}>Generate Random Graph</button>
-          <input type="file" accept=".txt" onChange={(e) => handleFileUpload(e, setGraph2, setGraphData2)} />
-          {graphData2 && (
-            <div className="graph-container">
-              <ForceGraph2D graphData={graphData2} />
-            </div>
-          )}
+          <input type="file" accept=".graph" onChange={(e) => handleFileUpload(e, setGraph2)} />
         </div>
       </div>
 
